@@ -1,0 +1,274 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #080b15;
+    color: #e8eaf5;
+    font-family: Arial, sans-serif;
+    padding: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* HOME */
+
+#homePage {
+    padding: 48px 3% 40px;
+}
+
+.heading {
+    margin-bottom: 58px;
+}
+
+.heading h1 {
+    font-size: 36px;
+    font-weight: 500;
+    color: #789aff;
+    margin-bottom: 15px;
+}
+
+.heading p {
+    color: #77839e;
+    font-size: 17px;
+}
+
+/* VIDEO GRID */
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.video-card {
+    background: #101523;
+    border: 1px solid #20283a;
+    border-radius: 29px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.thumbnail {
+    height: 320px;
+    background: #080b15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.thumbnail img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+}
+
+.video-card-content {
+    padding: 20px;
+}
+
+.video-card h3 {
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.5;
+    height: 50px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.watch-button {
+    width: 100%;
+    height: 59px;
+    background: #0c2435;
+    color: #29b9f5;
+    border: 1px solid #124663;
+    border-radius: 16px;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+/* DETAILS PAGE */
+
+#detailsPage {
+    padding: 60px 6% 40px;
+}
+
+.back-button {
+    background: #111923;
+    color: #8293b3;
+    border: 1px solid #252d3b;
+    padding: 20px 28px;
+    border-radius: 22px;
+    font-size: 18px;
+    margin-bottom: 65px;
+    cursor: pointer;
+}
+
+/* PREVIEW */
+
+.preview-box {
+    width: 100%;
+    height: 350px;
+    background: #03050a;
+    border: 1px solid #171c28;
+    border-radius: 35px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* VIDEO INFO */
+
+.details-info {
+    margin-top: 60px;
+    margin-bottom: 80px;
+}
+
+.details-info h1 {
+    font-size: 30px;
+    font-weight: 400;
+    margin-bottom: 24px;
+}
+
+.details-info p {
+    color: #78849e;
+    font-size: 17px;
+    letter-spacing: 1px;
+}
+
+/* PLAY BUTTON */
+
+.play-button {
+    width: 100%;
+    height: 90px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(110deg, #08b8e9, #5663f6);
+    color: white;
+    font-size: 23px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 25px;
+}
+
+/* SHARE BUTTON */
+
+.share-button {
+    width: 100%;
+    height: 90px;
+    border: 1px solid #252d3b;
+    border-radius: 27px;
+    background: #111923;
+    color: #8192b5;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+/* PLAYER */
+
+.player-container {
+    margin-top: 25px;
+    background: black;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.player-container video {
+    width: 100%;
+    max-height: 75vh;
+    display: block;
+}
+
+.ad-message {
+    color: #8b9ab5;
+    text-align: center;
+    margin: 20px;
+    font-size: 13px;
+}
+
+.loading {
+    color: #8490aa;
+    padding: 30px;
+}
+
+/* MOBILE */
+
+@media(max-width: 600px) {
+
+    #homePage {
+        padding: 50px 3% 30px;
+    }
+
+    .heading h1 {
+        font-size: 36px;
+    }
+
+    .video-grid {
+        gap: 18px;
+    }
+
+    .thumbnail {
+        height: 250px;
+    }
+
+    .video-card {
+        border-radius: 27px;
+    }
+
+    .video-card-content {
+        padding: 15px;
+    }
+
+    .video-card h3 {
+        font-size: 16px;
+        height: 52px;
+    }
+
+    .watch-button {
+        height: 58px;
+        font-size: 16px;
+    }
+
+    #detailsPage {
+        padding: 60px 5% 30px;
+    }
+
+    .back-button {
+        margin-bottom: 65px;
+    }
+
+    .preview-box {
+        height: 350px;
+    }
+
+    .details-info {
+        margin-top: 60px;
+        margin-bottom: 75px;
+    }
+
+    .details-info h1 {
+        font-size: 27px;
+    }
+
+    .play-button {
+        height: 85px;
+        font-size: 20px;
+    }
+
+    .share-button {
+        height: 85px;
+        font-size: 19px;
+    }
+}
