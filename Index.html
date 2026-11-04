@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b15">
+
+<title>DESHI - Videos</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- HOME PAGE -->
+
+<main id="homePage">
+
+    <header class="heading">
+        <h1>Videos</h1>
+        <p>Random picks — tap to watch</p>
+    </header>
+
+    <section class="video-grid" id="videoGrid">
+        <p class="loading">Loading videos...</p>
+    </section>
+
+</main>
+
+
+<!-- VIDEO DETAILS PAGE -->
+
+<main id="detailsPage" class="hidden">
+
+    <button class="back-button" onclick="goBack()">
+        ‹ &nbsp; Back to Videos
+    </button>
+
+    <div class="preview-box">
+        <img id="detailThumbnail" src="" alt="Video preview">
+    </div>
+
+    <div class="details-info">
+
+        <h1 id="detailTitle">Video Title</h1>
+
+        <p id="detailDate">ADDED TODAY</p>
+
+    </div>
+
+    <button class="play-button" onclick="playVideo()">
+        ▶ &nbsp; Play Now (2 Ads)
+    </button>
+
+    <button class="share-button" onclick="shareVideo()">
+        ↗ &nbsp; Share Video Link
+    </button>
+
+    <div id="adMessage" class="ad-message hidden">
+        Advertisement integration is not configured yet.
+    </div>
+
+    <div id="playerContainer" class="player-container hidden">
+
+        <video id="videoPlayer"
+               controls
+               controlsList="nodownload"
+               playsinline>
+        </video>
+
+    </div>
+
+</main>
+
+<script src="script.js"></script>
+
+</body>
+</html>
