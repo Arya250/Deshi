@@ -1,76 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#080b15">
 
-<title>DESHI - Videos</title>
+<meta name="theme-color" content="#f5f7fb">
+
+<title>DESHI - Watch Videos</title>
+
+<meta name="description" content="Discover and watch videos on DESHI.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
+
+<!-- BACKGROUND -->
+
+<div class="background-glow"></div>
+
 
 <!-- HOME PAGE -->
 
 <main id="homePage">
 
-    <header class="heading">
-        <h1>Videos</h1>
-        <p>Random picks — tap to watch</p>
+    <header class="top-header">
+
+        <div class="brand">
+
+            <div class="brand-icon">D</div>
+
+            <span>DESHI</span>
+
+        </div>
+
+        <div class="header-status">
+
+            <span class="status-dot"></span>
+
+            <span>Online</span>
+
+        </div>
+
     </header>
 
-    <section class="video-grid" id="videoGrid">
-        <p class="loading">Loading videos...</p>
+
+    <section class="hero-section">
+
+        <div class="hero-content">
+
+            <span class="hero-label">DISCOVER SOMETHING NEW</span>
+
+            <h1>Videos</h1>
+
+            <p>Explore and enjoy your favourite videos.</p>
+
+        </div>
+
     </section>
 
+
+    <section class="video-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>Explore Videos</h2>
+
+                <p id="videoCount">Discover something interesting</p>
+
+            </div>
+
+            <div class="video-count-badge" id="countBadge">0</div>
+
+        </div>
+
+
+        <div class="video-grid" id="videoGrid">
+
+            <div class="loading-card">
+
+                <div class="loader"></div>
+
+                <p>Loading videos...</p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+
+        <div class="footer-brand">DESHI</div>
+
+        <p>Enjoy your time.</p>
+
+    </footer>
+
 </main>
+
 
 
 <!-- VIDEO DETAILS PAGE -->
 
 <main id="detailsPage" class="hidden">
 
-    <button class="back-button" onclick="goBack()">
-        ‹ &nbsp; Back to Videos
-    </button>
+    <header class="details-header">
 
-    <div class="preview-box">
-        <img id="detailThumbnail" src="" alt="Video preview">
-    </div>
+        <button class="back-button" onclick="goBack()">
 
-    <div class="details-info">
+            <span>←</span>
 
-        <h1 id="detailTitle">Video Title</h1>
+            <span>Back</span>
 
-        <p id="detailDate">ADDED TODAY</p>
+        </button>
 
-    </div>
+        <div class="details-brand">DESHI</div>
 
-    <button class="play-button" onclick="playVideo()">
-        ▶ &nbsp; Play Now (2 Ads)
-    </button>
+    </header>
 
-    <button class="share-button" onclick="shareVideo()">
-        ↗ &nbsp; Share Video Link
-    </button>
 
-    <div id="adMessage" class="ad-message hidden">
-        Advertisement integration is not configured yet.
-    </div>
+    <section class="details-container">
 
-    <div id="playerContainer" class="player-container hidden">
 
-        <video id="videoPlayer"
-               controls
-               controlsList="nodownload"
-               playsinline>
-        </video>
+        <!-- VIDEO PREVIEW -->
 
-    </div>
+        <div class="preview-box">
+
+            <img
+                id="detailThumbnail"
+                src=""
+                alt="Video preview"
+            >
+
+            <div class="preview-overlay">
+
+                <div class="preview-play-icon">▶</div>
+
+            </div>
+
+        </div>
+
+
+        <!-- VIDEO INFORMATION -->
+
+        <div class="details-info">
+
+            <div class="video-label">VIDEO</div>
+
+            <h1 id="detailTitle">Video</h1>
+
+            <p id="detailDate">Recently added</p>
+
+        </div>
+
+
+        <!-- PLAY BUTTON -->
+
+        <button class="play-button" onclick="playVideo()">
+
+            <span>▶</span>
+
+            Play Now
+
+        </button>
+
+
+        <!-- SHARE BUTTON -->
+
+        <button class="share-button" onclick="shareVideo()">
+
+            <span>↗</span>
+
+            Share Video
+
+        </button>
+
+
+        <!-- VIDEO PLAYER -->
+
+        <div id="playerContainer" class="player-container hidden">
+
+            <div class="player-header">
+
+                <span>NOW PLAYING</span>
+
+                <span class="live-dot"></span>
+
+            </div>
+
+            <video
+                id="videoPlayer"
+                controls
+                playsinline
+                preload="metadata"
+            ></video>
+
+        </div>
+
+
+        <!-- SUGGESTED VIDEOS -->
+
+        <section class="suggested-section">
+
+            <div class="suggested-heading">
+
+                <h2>More Videos</h2>
+
+                <span>Explore more</span>
+
+            </div>
+
+            <div class="suggested-grid" id="suggestedGrid"></div>
+
+        </section>
+
+
+    </section>
+
+
+    <footer>
+
+        <div class="footer-brand">DESHI</div>
+
+        <p>Enjoy your time.</p>
+
+    </footer>
 
 </main>
+
+
+
+<!-- LOADING OVERLAY -->
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+
+    <div class="loading-content">
+
+        <div class="big-loader"></div>
+
+        <h2>Preparing Your Video</h2>
+
+        <p>Please wait a moment...</p>
+
+    </div>
+
+</div>
+
+
 
 <script src="script.js"></script>
 
