@@ -1,14 +1,28 @@
-// DESHI CONFIGURATION
+/* =====================================
+   DESHI VIDEO WEBSITE
+===================================== */
 
 const OWNER = "arya250";
 const REPO = "Deshi";
 const BRANCH = "main";
 
+const RAW_BASE =
+`https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
+
+const API_BASE =
+`https://api.github.com/repos/${OWNER}/${REPO}/contents/thumbnails?ref=${BRANCH}`;
+
+
 let videos = [];
+
 let selectedVideo = null;
 
+let isPlaying = false;
 
-// LOAD VIDEOS AUTOMATICALLY FROM GITHUB
+
+/* =====================================
+   LOAD VIDEOS
+===================================== */
 
 async function loadVideos() {
 
@@ -16,244 +30,514 @@ async function loadVideos() {
 
     try {
 
-        const api =
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/thumbnails?ref=${BRANCH}`;
-
-        const response = await fetch(api);
+        const response = await fetch(API_BASE);
 
         if (!response.ok) {
-            throw new Error("Unable to load thumbnails");
+
+            throw new Error("GitHub API request failed");
+
         }
 
         const files = await response.json();
 
-        const thumbnails = files.filter(file =>
-            /^thumbnail\d+\.(jpg|jpeg|png|webp)$/i.test(file.name)
-        );
+        if (!Array.isArray(files)) {
+
+            throw new Error("Invalid GitHub response");
+
+        }
+
 
         videos = [];
 
-        for (const file of thumbnails) {
+        for (const file of files) {
 
-            const match = file.name.match(/\d+/);
+            const match = file.name.match(
+                /^thumbnail(\d+)\.(jpg|jpeg|png|webp)$/i
+            );
 
             if (!match) continue;
 
-            const number = match[0];
+            const id = match[1];
 
             videos.push({
-                id: number,
-                title: `Video ${number}`,
-                thumbnail: `thumbnails/${file.name}`,
-                video: `videos/video${number}.mp4`
+
+                id: id,
+
+                title: `Video ${id}`,
+
+                thumbnail:
+                `thumbnails/${file.name}`,
+
+                video:
+                `videos/video${id}.mp4`
+
             });
 
         }
 
-        videos.sort((a, b) => Number(a.id) - Number(b.id));
 
-        grid.innerHTML = "";
+        videos.sort((a,b) => Number(a.id) - Number(b.id));
 
-        videos.forEach(video => {
 
-            const card = document.createElement("article");
+        renderVideos();
 
-            card.className = "video-card";
+    }
 
-            const image = document.createElement("img");
-            image.src = video.thumbnail;
-            image.alt = video.title;
-            image.loading = "lazy";
-
-            const thumbnail = document.createElement("div");
-            thumbnail.className = "thumbnail";
-            thumbnail.appendChild(image);
-
-            const content = document.createElement("div");
-            content.className = "video-card-content";
-
-            const title = document.createElement("h3");
-            title.textContent = video.title;
-
-            const button = document.createElement("button");
-            button.className = "watch-button";
-            button.textContent = "Watch Video";
-
-            button.onclick = () => openVideo(video);
-
-            content.appendChild(title);
-            content.appendChild(button);
-
-            card.appendChild(thumbnail);
-            card.appendChild(content);
-
-            card.onclick = () => openVideo(video);
-
-            grid.appendChild(card);
-
-        });
-
-        if (videos.length === 0) {
-            grid.innerHTML = "<p>No videos available.</p>";
-        }
-
-    } catch (error) {
-
-        grid.innerHTML =
-        "<p>Unable to load videos. Check GitHub repository settings.</p>";
+    catch(error) {
 
         console.error(error);
+
+        grid.innerHTML = `
+            <div class="loading-card">
+                Unable to load videos.
+                Please try again later.
+            </div>
+        `;
 
     }
 
 }
 
 
-// OPEN VIDEO DETAILS
+/* =====================================
+   RENDER HOME VIDEOS
+===================================== */
+
+function renderVideos() {
+
+    const grid = document.getElementById("videoGrid");
+
+    grid.innerHTML = "";
+
+    document.getElementById("countBadge").textContent =
+        videos.length;
+
+    document.getElementById("videoCount").textContent =
+        `${videos.length} videos available`;
+
+
+    if (videos.length === 0) {
+
+        grid.innerHTML = `
+            <div class="loading-card">
+                No videos available.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    videos.forEach((video,index) => {
+
+        const card = document.createElement("article");
+
+        card.className = "video-card";
+
+        card.style.animationDelay = `${index * 40}ms`;
+
+
+        const thumbnail = document.createElement("div");
+
+        thumbnail.className = "thumbnail";
+
+
+        const image = document.createElement("img");
+
+        image.src = video.thumbnail;
+
+        image.alt = "";
+
+        image.loading = "lazy";
+
+        image.onerror = () => {
+
+            image.style.opacity = "0";
+
+        };
+
+
+        thumbnail.appendChild(image);
+
+        card.appendChild(thumbnail);
+
+
+        card.addEventListener("click",() => {
+
+            openVideo(video);
+
+        });
+
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+/* =====================================
+   OPEN VIDEO DETAILS
+===================================== */
 
 function openVideo(video) {
 
     selectedVideo = video;
 
-    document.getElementById("homePage").classList.add("hidden");
+    isPlaying = false;
 
-    document.getElementById("detailsPage").classList.remove("hidden");
 
-    document.getElementById("detailThumbnail").src = video.thumbnail;
+    stopPlayer();
 
-    document.getElementById("detailTitle").textContent = video.title;
+
+    document.getElementById("homePage")
+        .classList.add("hidden");
+
+
+    document.getElementById("detailsPage")
+        .classList.remove("hidden");
+
+
+    document.getElementById("detailThumbnail").src =
+        video.thumbnail;
+
+
+    document.getElementById("detailTitle").textContent =
+        video.title;
+
 
     document.getElementById("detailDate").textContent =
-        "ADDED " + new Date().toLocaleDateString("en-GB");
+        "Recently added";
 
-    document.getElementById("playerContainer").classList.add("hidden");
 
-    document.getElementById("adMessage").classList.add("hidden");
+    document.getElementById("playerContainer")
+        .classList.add("hidden");
 
-    document.getElementById("videoPlayer").pause();
 
-    window.scrollTo(0, 0);
+    document.getElementById("loadingOverlay")
+        .classList.add("hidden");
+
+
+    renderSuggested(video.id);
+
+
+    history.pushState(
+        {video: video.id},
+        "",
+        `?video=${video.id}`
+    );
+
+
+    window.scrollTo(0,0);
 
 }
 
 
-// BACK BUTTON
+/* =====================================
+   STOP PLAYER
+===================================== */
 
-function goBack() {
+function stopPlayer() {
 
     const player = document.getElementById("videoPlayer");
 
     player.pause();
+
     player.removeAttribute("src");
+
     player.load();
-
-    document.getElementById("detailsPage").classList.add("hidden");
-
-    document.getElementById("homePage").classList.remove("hidden");
-
-    window.scrollTo(0, 0);
 
 }
 
 
-// PLAY BUTTON
+/* =====================================
+   PLAY VIDEO
+===================================== */
 
 function playVideo() {
 
-    // Real advertisement integration is required here.
-    // Do not unlock video until the ad provider confirms
-    // both completed advertisements.
+    if (!selectedVideo || isPlaying) return;
 
-    document.getElementById("adMessage").classList.remove("hidden");
+    isPlaying = true;
+
+
+    const overlay =
+        document.getElementById("loadingOverlay");
+
+
+    overlay.classList.remove("hidden");
+
+
+    const player =
+        document.getElementById("videoPlayer");
+
+
+    const videoUrl =
+        `${RAW_BASE}/${selectedVideo.video}`;
+
+
+    player.src = videoUrl;
+
+
+    player.oncanplay = async () => {
+
+        overlay.classList.add("hidden");
+
+        document.getElementById("playerContainer")
+            .classList.remove("hidden");
+
+        try {
+
+            await player.play();
+
+        }
+
+        catch(error) {
+
+            console.log("Playback requires user interaction.");
+
+        }
+
+    };
+
+
+    player.onerror = () => {
+
+        overlay.classList.add("hidden");
+
+        isPlaying = false;
+
+        alert(
+            "Unable to play this video. Please check whether the MP4 file exists in the GitHub videos folder."
+        );
+
+        stopPlayer();
+
+    };
+
+
+    player.load();
 
 }
 
 
-// Called after verified completion of both advertisements.
+/* =====================================
+   BACK BUTTON
+===================================== */
 
-function unlockVideo() {
+function goBack() {
 
-    if (!selectedVideo) return;
+    stopPlayer();
 
-    const player = document.getElementById("videoPlayer");
+    selectedVideo = null;
 
-    player.src = selectedVideo.video;
+    isPlaying = false;
 
-    document.getElementById("adMessage").classList.add("hidden");
 
-    document.getElementById("playerContainer").classList.remove("hidden");
+    document.getElementById("detailsPage")
+        .classList.add("hidden");
 
-    player.play().catch(() => {});
+
+    document.getElementById("homePage")
+        .classList.remove("hidden");
+
+
+    history.pushState(
+        {},
+        "",
+        window.location.pathname
+    );
+
+
+    window.scrollTo(0,0);
 
 }
 
 
-// SHARE VIDEO LINK
+/* =====================================
+   SUGGESTED VIDEOS
+===================================== */
+
+function renderSuggested(currentId) {
+
+    const grid =
+        document.getElementById("suggestedGrid");
+
+    grid.innerHTML = "";
+
+
+    const suggested = videos
+        .filter(v => v.id !== currentId)
+        .slice(0,6);
+
+
+    suggested.forEach(video => {
+
+        const card = document.createElement("div");
+
+        card.className = "suggested-card";
+
+
+        const image = document.createElement("img");
+
+        image.src = video.thumbnail;
+
+        image.alt = "";
+
+        image.loading = "lazy";
+
+
+        card.appendChild(image);
+
+
+        card.onclick = () => {
+
+            openVideo(video);
+
+            window.scrollTo(0,0);
+
+        };
+
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+/* =====================================
+   SHARE VIDEO LINK
+===================================== */
 
 async function shareVideo() {
 
     if (!selectedVideo) return;
 
-    const url = window.location.origin +
-        window.location.pathname +
-        "?video=" + selectedVideo.id;
+
+    const url =
+        `${window.location.origin}${window.location.pathname}?video=${selectedVideo.id}`;
+
+
+    if (navigator.share) {
+
+        try {
+
+            await navigator.share({
+
+                title: "DESHI Video",
+
+                text: "Watch this video on DESHI.",
+
+                url: url
+
+            });
+
+            return;
+
+        }
+
+        catch(error) {
+
+            if (error.name === "AbortError") return;
+
+        }
+
+    }
+
 
     try {
 
         await navigator.clipboard.writeText(url);
 
-        alert("Video link copied!");
+        alert("Video link copied successfully!");
 
-    } catch {
+    }
 
-        prompt("Copy video link:", url);
+    catch(error) {
+
+        prompt("Copy video link:",url);
 
     }
 
 }
 
 
-// SUPPORT DIRECT VIDEO LINKS
+/* =====================================
+   DIRECT SHARED VIDEO LINK
+===================================== */
 
-async function checkSharedLink() {
+function checkSharedLink() {
 
-    const id = new URLSearchParams(location.search).get("video");
+    const params =
+        new URLSearchParams(window.location.search);
 
-    if (!id) return;
+    const id = params.get("video");
 
-    const response = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/thumbnails?ref=${BRANCH}`
-    );
 
-    if (!response.ok) return;
+    if (!id || !/^\d+$/.test(id)) return;
 
-    const files = await response.json();
 
-    const file = files.find(item =>
-        new RegExp(`^thumbnail${id}\\.(jpg|jpeg|png|webp)$`, "i")
-        .test(item.name)
-    );
+    const video = videos.find(v => v.id === id);
 
-    if (!file) return;
 
-    const video = {
-        id,
-        title: `Video ${id}`,
-        thumbnail: `thumbnails/${file.name}`,
-        video: `videos/video${id}.mp4`
-    };
+    if (video) {
 
-    openVideo(video);
+        openVideo(video);
+
+    }
 
 }
 
 
-// INITIALIZE
+/* =====================================
+   BROWSER BACK BUTTON
+===================================== */
 
-document.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("popstate",() => {
+
+    const id =
+        new URLSearchParams(location.search).get("video");
+
+
+    if (id) {
+
+        const video = videos.find(v => v.id === id);
+
+        if (video) {
+
+            openVideo(video);
+
+        }
+
+    }
+
+    else {
+
+        stopPlayer();
+
+        selectedVideo = null;
+
+        document.getElementById("detailsPage")
+            .classList.add("hidden");
+
+        document.getElementById("homePage")
+            .classList.remove("hidden");
+
+    }
+
+});
+
+
+/* =====================================
+   INITIALIZE
+===================================== */
+
+document.addEventListener("DOMContentLoaded",async () => {
 
     await loadVideos();
 
-    await checkSharedLink();
+    checkSharedLink();
 
 });
