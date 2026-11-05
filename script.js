@@ -1,7 +1,7 @@
 // DESHI CONFIGURATION
 
 const OWNER = "arya250";
-const REPO = "DESHI";
+const REPO = "Deshi";
 const BRANCH = "main";
 
 let videos = [];
