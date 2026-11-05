@@ -1,6 +1,6 @@
 // DESHI CONFIGURATION
 
-const OWNER = "YOUR_GITHUB_USERNAME";
+const OWNER = "arya250";
 const REPO = "DESHI";
 const BRANCH = "main";
 
