@@ -1,27 +1,107 @@
+
 /* =====================================
-   DESHI VIDEO WEBSITE
+   DESHI DYNAMIC VIDEO SYSTEM
 ===================================== */
 
 const OWNER = "arya250";
 const REPO = "Deshi";
 const BRANCH = "main";
 
-const RAW_BASE =
-`https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
+const API_ROOT =
+    `https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 
-const API_BASE =
-`https://api.github.com/repos/${OWNER}/${REPO}/contents/thumbnails?ref=${BRANCH}`;
+const RAW_ROOT =
+    `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
 
+const TARGET_CARDS = 100;
+const PAGE_SIZE = 40;
+
+const TELEGRAM_CHANNELS = [
+    {
+        name: "DESHI VEDIOS 🚀",
+        url: "https://t.me/viral5x"
+    },
+    {
+        name: "INSTAGRAM VIRAL 🎀",
+        url: "https://t.me/viral6x"
+    },
+    {
+        name: "LEAKED VIDEOS 🔞",
+        url: "https://t.me/vital2x"
+    },
+    {
+        name: "MMS 🍑 ",
+        url: "https://t.me/viral8x"
+    },
+    {
+        name: "TRENDING VEDIOS 📈",
+        url: "https://t.me/adulthoty"
+    },
+];
 
 let videos = [];
-
+let thumbnails = [];
+let feed = [];
 let selectedVideo = null;
-
-let isPlaying = false;
+let currentIndex = 0;
+let playing = false;
 
 
 /* =====================================
-   LOAD VIDEOS
+   RANDOM SHUFFLE
+===================================== */
+
+function shuffle(array) {
+    const result = [...array];
+
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+
+    return result;
+}
+
+
+/* =====================================
+   FETCH GITHUB FOLDER
+===================================== */
+
+async function getFolder(folder) {
+
+    const response = await fetch(
+        `${API_ROOT}/${folder}?ref=${BRANCH}`
+    );
+
+    if (!response.ok) {
+        throw new Error(`Unable to load ${folder} folder`);
+    }
+
+    const files = await response.json();
+
+    if (!Array.isArray(files)) {
+        throw new Error(`Invalid ${folder} folder`);
+    }
+
+    return files.filter(file => file.type === "file");
+}
+
+
+/* =====================================
+   FILE EXTENSIONS
+===================================== */
+
+function isVideo(file) {
+    return /\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name);
+}
+
+function isImage(file) {
+    return /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+}
+
+
+/* =====================================
+   LOAD ALL MEDIA
 ===================================== */
 
 async function loadVideos() {
@@ -30,77 +110,114 @@ async function loadVideos() {
 
     try {
 
-        const response = await fetch(API_BASE);
+        const [videoFiles, imageFiles] = await Promise.all([
+            getFolder("videos"),
+            getFolder("thumbnails")
+        ]);
 
-        if (!response.ok) {
+        videos = videoFiles
+            .filter(isVideo)
+            .map(file => ({
+                name: file.name,
+                url: file.download_url
+            }))
+            .filter(file => file.url);
 
-            throw new Error("GitHub API request failed");
+        thumbnails = imageFiles
+            .filter(isImage)
+            .map(file => ({
+                name: file.name,
+                url: file.download_url
+            }))
+            .filter(file => file.url);
 
+        if (!videos.length) {
+            throw new Error("No video files found.");
         }
 
-        const files = await response.json();
-
-        if (!Array.isArray(files)) {
-
-            throw new Error("Invalid GitHub response");
-
+        if (!thumbnails.length) {
+            throw new Error("No thumbnails found.");
         }
 
-
-        videos = [];
-
-        for (const file of files) {
-
-            const match = file.name.match(
-                /^thumbnail(\d+)\.(jpg|jpeg|png|webp)$/i
-            );
-
-            if (!match) continue;
-
-            const id = match[1];
-
-            videos.push({
-
-                id: id,
-
-                title: `Video ${id}`,
-
-                thumbnail:
-                `thumbnails/${file.name}`,
-
-                video:
-                `videos/video${id}.mp4`
-
-            });
-
-        }
-
-
-        videos.sort((a,b) => Number(a.id) - Number(b.id));
-
+        createRandomFeed();
 
         renderVideos();
 
-    }
+        checkSharedLink();
 
-    catch(error) {
+    } catch (error) {
 
         console.error(error);
 
         grid.innerHTML = `
             <div class="loading-card">
-                Unable to load videos.
-                Please try again later.
+                <p>${escapeHTML(error.message)}</p>
+                <button class="load-more" onclick="loadVideos()">
+                    Try Again
+                </button>
             </div>
         `;
-
     }
-
 }
 
 
 /* =====================================
-   RENDER HOME VIDEOS
+   RANDOM VIDEO + THUMBNAIL MATCHING
+===================================== */
+
+function createRandomFeed() {
+
+    const randomVideos = shuffle(videos);
+    const randomImages = shuffle(thumbnails);
+
+    feed = [];
+
+    const total = Math.max(
+        TARGET_CARDS,
+        videos.length
+    );
+
+    for (let i = 0; i < total; i++) {
+
+        const video = randomVideos[i % randomVideos.length];
+
+        const thumbnail = randomImages[i % randomImages.length];
+
+        feed.push({
+
+            id: `card-${i}`,
+
+            video: video,
+
+            thumbnail: thumbnail,
+
+        });
+    }
+
+    // Random card order
+    feed = shuffle(feed);
+
+    currentIndex = 0;
+}
+
+
+/* =====================================
+   SAFE HTML TEXT
+===================================== */
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
+}
+
+
+/* =====================================
+   RENDER VIDEO CARDS
 ===================================== */
 
 function renderVideos() {
@@ -109,128 +226,165 @@ function renderVideos() {
 
     grid.innerHTML = "";
 
-    document.getElementById("countBadge").textContent =
-        videos.length;
+    const visible = feed.slice(0, currentIndex + PAGE_SIZE);
 
-    document.getElementById("videoCount").textContent =
-        `${videos.length} videos available`;
-
-
-    if (videos.length === 0) {
-
-        grid.innerHTML = `
-            <div class="loading-card">
-                No videos available.
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    videos.forEach((video,index) => {
+    visible.forEach((item, index) => {
 
         const card = document.createElement("article");
 
         card.className = "video-card";
 
-        card.style.animationDelay = `${index * 40}ms`;
-
-
-        const thumbnail = document.createElement("div");
-
-        thumbnail.className = "thumbnail";
-
+        card.style.animationDelay =
+            `${Math.min(index % PAGE_SIZE, 15) * 25}ms`;
 
         const image = document.createElement("img");
 
-        image.src = video.thumbnail;
+        image.src = item.thumbnail.url;
 
         image.alt = "";
 
         image.loading = "lazy";
 
+        image.decoding = "async";
+
         image.onerror = () => {
-
             image.style.opacity = "0";
-
         };
 
+        const thumbnail = document.createElement("div");
+
+        thumbnail.className = "thumbnail";
 
         thumbnail.appendChild(image);
 
         card.appendChild(thumbnail);
 
-
-        card.addEventListener("click",() => {
-
-            openVideo(video);
-
+        card.addEventListener("click", () => {
+            openVideo(item);
         });
 
-
         grid.appendChild(card);
-
     });
 
+    document.getElementById("countBadge").textContent =
+        visible.length;
+
+    document.getElementById("videoCount").textContent =
+        `${videos.length} videos available`;
+
+    const moreButton = document.getElementById("loadMoreBtn");
+
+    moreButton.classList.toggle(
+        "hidden",
+        currentIndex + PAGE_SIZE >= feed.length
+    );
 }
 
 
 /* =====================================
-   OPEN VIDEO DETAILS
+   LOAD MORE
 ===================================== */
 
-function openVideo(video) {
+function loadMoreVideos() {
 
-    selectedVideo = video;
+    if (currentIndex + PAGE_SIZE >= feed.length) return;
 
-    isPlaying = false;
+    currentIndex += PAGE_SIZE;
 
+    renderVideos();
+}
+
+
+/* =====================================
+   OPEN VIDEO
+===================================== */
+
+function openVideo(item) {
+
+    selectedVideo = item;
+
+    playing = false;
 
     stopPlayer();
-
 
     document.getElementById("homePage")
         .classList.add("hidden");
 
+    document.getElementById("telegramPage")
+        .classList.add("hidden");
 
     document.getElementById("detailsPage")
         .classList.remove("hidden");
 
-
     document.getElementById("detailThumbnail").src =
-        video.thumbnail;
-
-
-    document.getElementById("detailTitle").textContent =
-        video.title;
-
-
-    document.getElementById("detailDate").textContent =
-        "Recently added";
-
+        item.thumbnail.url;
 
     document.getElementById("playerContainer")
         .classList.add("hidden");
 
-
     document.getElementById("loadingOverlay")
         .classList.add("hidden");
 
+    renderSuggested(item);
 
-    renderSuggested(video.id);
+    const params = new URLSearchParams();
 
+    params.set("v", item.video.name);
 
     history.pushState(
-        {video: video.id},
+        { page: "video" },
         "",
-        `?video=${video.id}`
+        `?${params.toString()}`
     );
 
+    window.scrollTo(0, 0);
+}
 
-    window.scrollTo(0,0);
 
+/* =====================================
+   VIDEO PLAYER
+===================================== */
+
+function playVideo() {
+
+    if (!selectedVideo || playing) return;
+
+    playing = true;
+
+    const player = document.getElementById("videoPlayer");
+
+    const overlay = document.getElementById("loadingOverlay");
+
+    overlay.classList.remove("hidden");
+
+    player.src = selectedVideo.video.url;
+
+    player.oncanplay = async () => {
+
+        overlay.classList.add("hidden");
+
+        document.getElementById("playerContainer")
+            .classList.remove("hidden");
+
+        try {
+            await player.play();
+        } catch (error) {
+            console.log("Press play to start the video.");
+        }
+    };
+
+    player.onerror = () => {
+
+        overlay.classList.add("hidden");
+
+        playing = false;
+
+        alert("Unable to play this video. Check the video file.");
+
+        stopPlayer();
+    };
+
+    player.load();
 }
 
 
@@ -248,110 +402,7 @@ function stopPlayer() {
 
     player.load();
 
-}
-
-
-/* =====================================
-   PLAY VIDEO
-===================================== */
-
-function playVideo() {
-
-    if (!selectedVideo || isPlaying) return;
-
-    isPlaying = true;
-
-
-    const overlay =
-        document.getElementById("loadingOverlay");
-
-
-    overlay.classList.remove("hidden");
-
-
-    const player =
-        document.getElementById("videoPlayer");
-
-
-    const videoUrl =
-        `${RAW_BASE}/${selectedVideo.video}`;
-
-
-    player.src = videoUrl;
-
-
-    player.oncanplay = async () => {
-
-        overlay.classList.add("hidden");
-
-        document.getElementById("playerContainer")
-            .classList.remove("hidden");
-
-        try {
-
-            await player.play();
-
-        }
-
-        catch(error) {
-
-            console.log("Playback requires user interaction.");
-
-        }
-
-    };
-
-
-    player.onerror = () => {
-
-        overlay.classList.add("hidden");
-
-        isPlaying = false;
-
-        alert(
-            "Unable to play this video. Please check whether the MP4 file exists in the GitHub videos folder."
-        );
-
-        stopPlayer();
-
-    };
-
-
-    player.load();
-
-}
-
-
-/* =====================================
-   BACK BUTTON
-===================================== */
-
-function goBack() {
-
-    stopPlayer();
-
-    selectedVideo = null;
-
-    isPlaying = false;
-
-
-    document.getElementById("detailsPage")
-        .classList.add("hidden");
-
-
-    document.getElementById("homePage")
-        .classList.remove("hidden");
-
-
-    history.pushState(
-        {},
-        "",
-        window.location.pathname
-    );
-
-
-    window.scrollTo(0,0);
-
+    playing = false;
 }
 
 
@@ -359,174 +410,265 @@ function goBack() {
    SUGGESTED VIDEOS
 ===================================== */
 
-function renderSuggested(currentId) {
+function renderSuggested(current) {
 
-    const grid =
-        document.getElementById("suggestedGrid");
+    const grid = document.getElementById("suggestedGrid");
 
     grid.innerHTML = "";
 
+    const suggestions = shuffle(
+        feed.filter(item => item !== current)
+    ).slice(0, 6);
 
-    const suggested = videos
-        .filter(v => v.id !== currentId)
-        .slice(0,6);
-
-
-    suggested.forEach(video => {
+    suggestions.forEach(item => {
 
         const card = document.createElement("div");
 
         card.className = "suggested-card";
 
+        const img = document.createElement("img");
 
-        const image = document.createElement("img");
+        img.src = item.thumbnail.url;
 
-        image.src = video.thumbnail;
+        img.alt = "";
 
-        image.alt = "";
+        img.loading = "lazy";
 
-        image.loading = "lazy";
-
-
-        card.appendChild(image);
-
+        card.appendChild(img);
 
         card.onclick = () => {
-
-            openVideo(video);
-
-            window.scrollTo(0,0);
-
+            openVideo(item);
         };
 
-
         grid.appendChild(card);
-
     });
-
 }
 
 
 /* =====================================
-   SHARE VIDEO LINK
+   SHARE VIDEO
 ===================================== */
 
 async function shareVideo() {
 
     if (!selectedVideo) return;
 
+    const url = new URL(window.location.href);
 
-    const url =
-        `${window.location.origin}${window.location.pathname}?video=${selectedVideo.id}`;
+    url.search = "";
 
-
-    if (navigator.share) {
-
-        try {
-
-            await navigator.share({
-
-                title: "DESHI Video",
-
-                text: "Watch this video on DESHI.",
-
-                url: url
-
-            });
-
-            return;
-
-        }
-
-        catch(error) {
-
-            if (error.name === "AbortError") return;
-
-        }
-
-    }
-
+    url.searchParams.set("v", selectedVideo.video.name);
 
     try {
 
-        await navigator.clipboard.writeText(url);
+        if (navigator.share) {
 
-        alert("Video link copied successfully!");
+            await navigator.share({
+                title: "DESHI",
+                text: "Watch this video on DESHI.",
+                url: url.href
+            });
 
+        } else {
+
+            await navigator.clipboard.writeText(url.href);
+
+            alert("Link copied!");
+
+        }
+
+    } catch (error) {
+
+        if (error.name !== "AbortError") {
+            prompt("Copy video link:", url.href);
+        }
     }
-
-    catch(error) {
-
-        prompt("Copy video link:",url);
-
-    }
-
 }
 
 
 /* =====================================
-   DIRECT SHARED VIDEO LINK
+   TELEGRAM PAGE
+===================================== */
+
+function showTelegram() {
+
+    stopPlayer();
+
+    document.getElementById("homePage")
+        .classList.add("hidden");
+
+    document.getElementById("detailsPage")
+        .classList.add("hidden");
+
+    document.getElementById("telegramPage")
+        .classList.remove("hidden");
+
+    history.pushState(
+        { page: "telegram" },
+        "",
+        "?page=telegram"
+    );
+
+    renderTelegramLinks();
+
+    window.scrollTo(0, 0);
+}
+
+
+function renderTelegramLinks() {
+
+    const container = document.getElementById("telegramLinks");
+
+    container.innerHTML = "";
+
+    TELEGRAM_CHANNELS.forEach(channel => {
+
+        const link = document.createElement("a");
+
+        link.className = "telegram-link";
+
+        link.href = channel.url;
+
+        link.target = "_blank";
+
+        link.rel = "noopener noreferrer";
+
+        const name = document.createElement("span");
+
+        name.textContent = channel.name;
+
+        const arrow = document.createElement("span");
+
+        arrow.textContent = "↗";
+
+        link.append(name, arrow);
+
+        container.appendChild(link);
+    });
+}
+
+
+/* =====================================
+   HOME PAGE
+===================================== */
+
+function showHome() {
+
+    stopPlayer();
+
+    selectedVideo = null;
+
+    document.getElementById("detailsPage")
+        .classList.add("hidden");
+
+    document.getElementById("telegramPage")
+        .classList.add("hidden");
+
+    document.getElementById("homePage")
+        .classList.remove("hidden");
+
+    history.pushState(
+        {},
+        "",
+        window.location.pathname
+    );
+
+    window.scrollTo(0, 0);
+}
+
+
+function goBack() {
+    showHome();
+}
+
+
+/* =====================================
+   SHARED VIDEO LINK
 ===================================== */
 
 function checkSharedLink() {
 
-    const params =
-        new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
 
-    const id = params.get("video");
+    const videoName = params.get("v");
 
+    if (videoName) {
 
-    if (!id || !/^\d+$/.test(id)) return;
+        const video = videos.find(
+            item => item.name === videoName
+        );
 
+        if (video) {
 
-    const video = videos.find(v => v.id === id);
+            const matchingItem = feed.find(
+                item => item.video.name === videoName
+            );
 
-
-    if (video) {
-
-        openVideo(video);
-
+            if (matchingItem) {
+                openVideo(matchingItem);
+            }
+        }
     }
-
 }
 
 
 /* =====================================
-   BROWSER BACK BUTTON
+   BROWSER BACK / FORWARD
 ===================================== */
 
-window.addEventListener("popstate",() => {
+window.addEventListener("popstate", () => {
 
-    const id =
-        new URLSearchParams(location.search).get("video");
+    const params = new URLSearchParams(location.search);
 
-
-    if (id) {
-
-        const video = videos.find(v => v.id === id);
-
-        if (video) {
-
-            openVideo(video);
-
-        }
-
-    }
-
-    else {
+    if (params.get("page") === "telegram") {
 
         stopPlayer();
 
-        selectedVideo = null;
+        document.getElementById("homePage")
+            .classList.add("hidden");
 
         document.getElementById("detailsPage")
             .classList.add("hidden");
 
-        document.getElementById("homePage")
+        document.getElementById("telegramPage")
             .classList.remove("hidden");
 
+        renderTelegramLinks();
+
+        return;
     }
 
+    if (params.get("v")) {
+
+        const video = videos.find(
+            item => item.name === params.get("v")
+        );
+
+        if (video) {
+
+            const item = feed.find(
+                entry => entry.video.name === video.name
+            );
+
+            if (item) {
+                openVideo(item);
+                return;
+            }
+        }
+    }
+
+    stopPlayer();
+
+    selectedVideo = null;
+
+    document.getElementById("detailsPage")
+        .classList.add("hidden");
+
+    document.getElementById("telegramPage")
+        .classList.add("hidden");
+
+    document.getElementById("homePage")
+        .classList.remove("hidden");
 });
 
 
@@ -534,10 +676,8 @@ window.addEventListener("popstate",() => {
    INITIALIZE
 ===================================== */
 
-document.addEventListener("DOMContentLoaded",async () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-    await loadVideos();
-
-    checkSharedLink();
+    loadVideos();
 
 });
