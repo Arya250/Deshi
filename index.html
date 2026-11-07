@@ -1,267 +1,137 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#08090c">
 
-<meta name="theme-color" content="#f5f7fb">
-
-<title>DESHI - Watch Videos</title>
-
+<title>DESHI — Discover Videos</title>
 <meta name="description" content="Discover and watch videos on DESHI.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<!-- BACKGROUND -->
+<header class="topbar">
+    <a class="logo" href="#" onclick="showHome();return false;">
+        <span class="logo-icon">D</span>
+        <span>DESHI</span>
+    </a>
 
-<div class="background-glow"></div>
-
+    <button class="telegram-button" onclick="showTelegram()">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path d="M21.8 3.2 18.7 20c-.2 1.2-.9 1.5-1.8.9l-5-3.7-2.4 2.3c-.3.3-.6.6-1.2.6l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.3L6 13.5l-4.9-1.6c-1.1-.3-1.1-1.1.2-1.6L20.3 2c.9-.3 1.7.2 1.5 1.2Z"/>
+        </svg>
+        Join Telegram
+    </button>
+</header>
 
 <!-- HOME PAGE -->
-
 <main id="homePage">
 
-    <header class="top-header">
-
-        <div class="brand">
-
-            <div class="brand-icon">D</div>
-
-            <span>DESHI</span>
-
-        </div>
-
-        <div class="header-status">
-
-            <span class="status-dot"></span>
-
-            <span>Online</span>
-
-        </div>
-
-    </header>
-
-
-    <section class="hero-section">
-
+    <section class="hero">
         <div class="hero-content">
-
-            <span class="hero-label">DISCOVER SOMETHING NEW</span>
-
-            <h1>Videos</h1>
-
-            <p>Explore and enjoy your favourite videos.</p>
-
+            <span class="eyebrow">WELCOME TO DESHI</span>
+            <h1>Discover<br><span>Something New.</span></h1>
+            <p>Explore videos. Enjoy every moment.</p>
         </div>
-
     </section>
 
-
-    <section class="video-section">
-
-        <div class="section-heading">
-
+    <section class="videos-section">
+        <div class="section-title">
             <div>
-
-                <h2>Explore Videos</h2>
-
-                <p id="videoCount">Discover something interesting</p>
-
+                <h2>Explore</h2>
+                <p id="videoCount">Discover videos</p>
             </div>
-
-            <div class="video-count-badge" id="countBadge">0</div>
-
+            <span class="count" id="countBadge">0</span>
         </div>
-
 
         <div class="video-grid" id="videoGrid">
-
             <div class="loading-card">
-
                 <div class="loader"></div>
-
                 <p>Loading videos...</p>
-
             </div>
-
         </div>
 
+        <div class="load-more-area">
+            <button id="loadMoreBtn" class="load-more hidden" onclick="loadMoreVideos()">
+                Load More
+            </button>
+        </div>
     </section>
-
-
-    <footer>
-
-        <div class="footer-brand">DESHI</div>
-
-        <p>Enjoy your time.</p>
-
-    </footer>
 
 </main>
 
-
-
-<!-- VIDEO DETAILS PAGE -->
-
+<!-- VIDEO DETAILS -->
 <main id="detailsPage" class="hidden">
 
-    <header class="details-header">
-
-        <button class="back-button" onclick="goBack()">
-
-            <span>←</span>
-
-            <span>Back</span>
-
-        </button>
-
-        <div class="details-brand">DESHI</div>
-
-    </header>
-
+    <div class="details-header">
+        <button class="back-button" onclick="goBack()">← Back</button>
+        <span class="details-logo">DESHI</span>
+    </div>
 
     <section class="details-container">
 
-
-        <!-- VIDEO PREVIEW -->
-
         <div class="preview-box">
-
-            <img
-                id="detailThumbnail"
-                src=""
-                alt="Video preview"
-            >
-
-            <div class="preview-overlay">
-
-                <div class="preview-play-icon">▶</div>
-
-            </div>
-
+            <img id="detailThumbnail" src="" alt="Video preview">
         </div>
-
-
-        <!-- VIDEO INFORMATION -->
 
         <div class="details-info">
-
-            <div class="video-label">VIDEO</div>
-
-            <h1 id="detailTitle">Video</h1>
-
-            <p id="detailDate">Recently added</p>
-
+            <span class="eyebrow">DESHI VIDEO</span>
+            <h1>Now Playing</h1>
+            <p>Enjoy watching on DESHI.</p>
         </div>
-
-
-        <!-- PLAY BUTTON -->
 
         <button class="play-button" onclick="playVideo()">
-
-            <span>▶</span>
-
-            Play Now
-
+            ▶ &nbsp; Play Video
         </button>
-
-
-        <!-- SHARE BUTTON -->
 
         <button class="share-button" onclick="shareVideo()">
-
-            <span>↗</span>
-
-            Share Video
-
+            ↗ &nbsp; Share Video
         </button>
 
-
-        <!-- VIDEO PLAYER -->
-
         <div id="playerContainer" class="player-container hidden">
-
-            <div class="player-header">
-
-                <span>NOW PLAYING</span>
-
-                <span class="live-dot"></span>
-
-            </div>
-
-            <video
-                id="videoPlayer"
-                controls
-                playsinline
-                preload="metadata"
-            ></video>
-
+            <video id="videoPlayer" controls playsinline preload="metadata"></video>
         </div>
 
-
-        <!-- SUGGESTED VIDEOS -->
-
         <section class="suggested-section">
-
-            <div class="suggested-heading">
-
-                <h2>More Videos</h2>
-
-                <span>Explore more</span>
-
-            </div>
-
+            <h2>More Videos</h2>
             <div class="suggested-grid" id="suggestedGrid"></div>
-
         </section>
 
-
     </section>
-
-
-    <footer>
-
-        <div class="footer-brand">DESHI</div>
-
-        <p>Enjoy your time.</p>
-
-    </footer>
-
 </main>
 
+<!-- TELEGRAM PAGE -->
+<main id="telegramPage" class="hidden">
 
-
-<!-- LOADING OVERLAY -->
-
-<div id="loadingOverlay" class="loading-overlay hidden">
-
-    <div class="loading-content">
-
-        <div class="big-loader"></div>
-
-        <h2>Preparing Your Video</h2>
-
-        <p>Please wait a moment...</p>
-
+    <div class="details-header">
+        <button class="back-button" onclick="showHome()">← Back</button>
+        <span class="details-logo">DESHI</span>
     </div>
 
+    <section class="telegram-container">
+        <div class="telegram-icon">✈</div>
+        <span class="eyebrow">STAY CONNECTED</span>
+        <h1>Join Our<br>Telegram Community</h1>
+        <p>Follow our official channels for updates and new content.</p>
+
+        <div class="telegram-links" id="telegramLinks"></div>
+    </section>
+</main>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loader"></div>
+    <p>Preparing your video...</p>
 </div>
 
-
-
 <script src="script.js"></script>
-
 </body>
 </html>
